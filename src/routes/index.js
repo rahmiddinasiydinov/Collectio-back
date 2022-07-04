@@ -6,8 +6,11 @@ const router = Router();
 const { upload} =require('../middlewares/multer');
 const { User } = require("./User");
 const { Tag } = require('./Tags');
-const {auth} = require('../middlewares/auth')
+const { auth } = require('../middlewares/auth');
+const { Admin } = require("./Admin");
+const {authAdmin} = require('../middlewares/adminAuth')
 router.get("/collection", Collection.GET);
+router.get('/users', User.GET_ALL);
 router.get("/collection_all", Collection.GET_ALL);
 router.get("/my_collections", Collection.GET_BY_USER);
 router.get("/my_items", Item.GET_BY_USER);
@@ -20,8 +23,12 @@ router.get("/language", Cookies.GET_LANG);
 router.get('/theme', Cookies.GET_THEME);
 router.get("/tags", Tag.GET);
 router.get("/logout", User.LOGOUT);
-router.post("/collection", upload.single("img"), Collection.POST);
-router.post("/item", upload.single("img"), Item.POST);
+router.post("/collection",auth, upload.single("img"), Collection.POST);
+router.post("/item",auth, upload.single("img"), Item.POST);
 router.post('/register', User.REGISTER);
-router.post('/login', User.LOGIN)
+router.post('/login', User.LOGIN);
+router.get("/view_as", auth, authAdmin, Admin.VIEW_AS);
+router.put("/user/status", auth,authAdmin, Admin.TOOGLE_USER_STATUS);
+router.put("/admin/status", auth, authAdmin, Admin.TOOGLE_ADMIN_STATUS);
+router.delete('/user/delete', auth, authAdmin, Admin.DELETE);
 module.exports = { router };

@@ -4,19 +4,12 @@ const bycript = require("bcrypt");
 const User = {
   GET: async (req, res) => {
     try {
-      const cookies = req.cookies;
-      if (cookies?.user) {
+      const user = await userModel.findOne({ username: req?.user?.username.toString() });
         res.send({
           status: 200,
-          user: cookies.user,
+          user:user
         });
-      } else {
-        res.send({
-          status: 401,
-          message: "Unauthorized",
-          user: null,
-        });
-      }
+
     } catch (error) {
       console.log(error);
       res.send({
@@ -24,6 +17,20 @@ const User = {
         message: "Internal server error",
         user: null,
       });
+    }
+  },
+  GET_ALL: async (req, res) => {
+    try {
+      const user = await userModel.find({});
+      res.send({
+        status: 200, 
+        data:user
+      })
+    } catch (error) {
+       res.send({
+         status: 500,
+         message:'Internal server error',
+       });
     }
   },
   REGISTER: async (req, res) => {
@@ -45,27 +52,24 @@ const User = {
               updatedAt: new Date().getTime(),
             });
             const user = await newUser.save();
+            console.log('user');
             const token = signUser({ username: user.username });
             res.cookie("token", token, {
               maxAge: 1000 * 60 * 60 * 24 * 7,
             });
-            res.cookie(
-              "user",
-              {
-                _id: user?._id,
-                fullName: user?.fullName,
-                isActive: user?.isActive,
-                isAdmin: user?.isAdmin,
-                username: user?.username,
-              },
-              {
-                maxAge: 1000 * 60 * 60 * 24 * 7,
-              }
-            );
+          
             res.send({
               status: 200,
               message: "Successfully registered",
               token,
+              data:{
+                _id: user?._id, 
+                fullName: user?.fullName, 
+                username: user?.username,
+                img:user?.img,
+                isAdmin: user?.isAdmin,
+                isActive:user?.isActive
+              }
             });
           }
         );
@@ -94,31 +98,26 @@ const User = {
           status: 401,
           message: "You are blocked by admin",
         });
-      }
-      if (user && user?.isActive) {
+      } else if (user) {
         bycript.compare(password, user.password, function (err, result) {
           console.log(result);
           if (result) {
-            const token = signUser(user.username);
+            const token = signUser({ username: user.username });
             res.cookie("token", token, {
               maxAge: 1000 * 60 * 60 * 24 * 7,
             });
-            res.cookie(
-              "user",
-              { _id:user?._id,
-                fullName: user?.fullName,
-                isActive: user?.isActive,
-                isAdmin: user?.isAdmin,
-                username: user?.username,
-              },
-              {
-                maxAge: 1000 * 60 * 60 * 24 * 7,
-              }
-            );
             res.send({
               status: 200,
               message: "Logged in",
               token,
+              data: {
+                _id: user?._id, 
+                fullName: user?.fullName, 
+                username: user?.username,
+                img:user?.img,
+                isAdmin: user?.isAdmin,
+                isActive:user?.isActive
+              }
             });
           } else {
             res.send({
@@ -143,15 +142,14 @@ const User = {
   },
   LOGOUT: async (req, res) => {
     try {
-      res.clearCookie('user');
       res.clearCookie("token");
       res.send({
         status: 200,
-        message:'legged out'
+        message: "legged out",
       });
     } catch (error) {
       console.log(error);
-      res.send('internal server error')
+      res.send("internal server error");
     }
   },
 };
