@@ -150,7 +150,7 @@ const User = {
   LOGOUT: async (req, res) => {
     try {
       res.cookie("token", {
-        expires: 0,
+        maxAge:0,
         secure: true,
         httpOnly: true,
         sameSite: "none",
