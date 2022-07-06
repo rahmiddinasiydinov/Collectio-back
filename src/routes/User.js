@@ -149,7 +149,7 @@ const User = {
   },
   LOGOUT: async (req, res) => {
     try {
-      res.clearCookie("token");
+      res.cookie("token",{expires: Date.now()});
       res.send({
         status: 200,
         message: "legged out",
