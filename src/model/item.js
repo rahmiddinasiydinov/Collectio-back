@@ -13,6 +13,10 @@ const itemSchema = new Schema({
     ref: "Tags",
   },
   img: String,
+  isMarkdown: {
+    type: Boolean,
+    default: false,
+  },
   likes: [
     {
       type: Schema.Types.ObjectId,
@@ -25,10 +29,12 @@ const itemSchema = new Schema({
       ref: "Users",
     },
   ],
-  views: [{
-    type: Schema.Types.ObjectId,
-    ref: "Users",
-  }],
+  views: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Users",
+    },
+  ],
   collectionName: {
     type: Schema.Types.ObjectId,
     ref: "Collections",

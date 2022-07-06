@@ -91,7 +91,7 @@ const Item = {
   },
   POST: async (req, res) => {
     try {
-      const { title, tag, desc, userId, collection } = req.body;
+      const { title, tag, desc, userId, collection, isMarkdown } = req.body;
       const response = await uploader(req.file.path);
 
       const newItem = new itemModel({
@@ -102,6 +102,7 @@ const Item = {
         user: userId,
         createdAt: new Date().getTime(),
         collectionName: collection,
+        isMarkdown
       });
       const data = await newItem.save();
       const user = await userModel.findOne({ _id: userId });

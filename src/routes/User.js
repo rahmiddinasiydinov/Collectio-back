@@ -1,6 +1,7 @@
 const { signUser } = require("../lib/jwt");
 const { userModel } = require("../model/user");
 const bycript = require("bcrypt");
+const { uploader } = require("../utils/utils");
 const User = {
   GET: async (req, res) => {
     try {
@@ -56,6 +57,9 @@ const User = {
             const token = signUser({ username: user.username });
             res.cookie("token", token, {
               maxAge: 1000 * 60 * 60 * 24 * 7,
+              secure: true,
+              httpOnly: true,
+              sameSite: "none",
             });
           
             res.send({
@@ -105,6 +109,9 @@ const User = {
             const token = signUser({ username: user.username });
             res.cookie("token", token, {
               maxAge: 1000 * 60 * 60 * 24 * 7,
+              secure: true,
+              httpOnly: true, 
+              sameSite:'none'
             });
             res.send({
               status: 200,
@@ -152,6 +159,26 @@ const User = {
       res.send("internal server error");
     }
   },
+  UPLOAD_IMAGE: async (req, res) => {
+    try {
+    console.log(req?.file);
+      const response = await uploader(req.file.path);
+      const user = await userModel.findOne({ username: req?.user?.username });
+      console.log(user);
+    user.img = response.url;
+    const updatedUser = await user.save();
+      res.send({
+        status: 200,
+        data:updatedUser,
+      });
+  } catch (error) {
+    console.log(error);
+    res.send({
+      status: 500,
+      message:"Internal server error",
+    });
+  }
+  }
 };
 
 module.exports = {

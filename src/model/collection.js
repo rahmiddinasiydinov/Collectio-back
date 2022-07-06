@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose"); ;
+const { Schema, model } = require("mongoose");
 
 const collectionSchema = new Schema({
   name: {
@@ -14,16 +14,20 @@ const collectionSchema = new Schema({
     required: true,
   },
   img: String,
+  isMarkdown: {
+    type: Boolean,
+    default: false
+  },
   items: [
     {
       type: Schema.Types.ObjectId,
       ref: "Items",
     },
   ],
-  user:{type:Schema.Types.ObjectId, ref:'Users'},
+  user: { type: Schema.Types.ObjectId, ref: "Users" },
   createdAt: Date,
 });
 const collectionModel = model("Collections", collectionSchema);
 module.exports = {
-     collectionModel
- }
+  collectionModel,
+};
