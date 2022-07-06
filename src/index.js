@@ -17,14 +17,14 @@ app.use(cookieParser());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://collectios.netlify.app",
+    origin: "https://collectios.netlify.app/",
     credentials: true,
   },
 });
 
 app.use(
   cors({
-    origin: "https://collectios.netlify.app",
+    origin: "https://collectios.netlify.app/",
     credentials: true,
   })
 );
