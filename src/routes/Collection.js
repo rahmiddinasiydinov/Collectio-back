@@ -1,8 +1,9 @@
 const { collectionModel } = require("../model/collection");
 const { userModel } = require("../model/user");
-const { uploader } = require("../utils/utils");
+const { uploader, destroyer } = require("../utils/utils");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-const fs = require('fs');
+const fs = require("fs");
+const { itemModel } = require("../model/item");
 const Collection = {
   GET_ALL: async (req, res) => {
     try {
@@ -100,12 +101,9 @@ const Collection = {
         createdAt: collection?.createdAt || "Not given",
         img: collection?.img,
       }));
-      csvWriter.writeRecords(data)
-        .then(() => {
-          res.status(200).download('./src/collections.csv');
-
-        });
-
+      csvWriter.writeRecords(data).then(() => {
+        res.status(200).download("./src/collections.csv");
+      });
     } catch (error) {
       console.log(error, 90);
       res.status(500).send("Internal server error");
@@ -124,7 +122,7 @@ const Collection = {
         img: response.url,
         createdAt: new Date().getTime(),
         user: userId,
-        isMarkdown
+        isMarkdown,
       });
       const data = await newCollection.save();
       const user = await userModel.findOne({ _id: userId });
@@ -145,6 +143,38 @@ const Collection = {
         message: "Internal server error",
       });
     }
+  },
+  DELETE: async (req, res) => {
+  try {
+      const { id } = req.query;
+      const deleted = await collectionModel.findByIdAndDelete(id);
+      await destroyer(deleted?.img);
+      const user = await userModel.findOne({ username: req?.user?.username });
+      const leftCollections = user?.collections?.filter(
+        (e) => e.toString() !== id
+      );
+      const leftItems = user?.items?.filter(
+        (e) => !deleted?.items?.includes(e)
+      );
+    console.log(user, leftCollections, "left");
+      user.collections = leftCollections;
+      user.items = leftItems;
+      await user.save();
+      deleted?.items?.forEach(async (e) => {
+        const deletedItem = await itemModel.findByIdAndDelete(e);
+        await destroyer(deletedItem?.img);
+      });
+      const upDateduser = await userModel.findOne({
+        username: req?.user?.username,
+      }).populate('collections');
+      res.send({ status: 200, data: upDateduser?.collections });
+  } catch (error) {
+    console.log(error);
+    res.send({
+      status: 500, 
+      message:'Internal server error'
+    })
+  }
   },
 };
 module.exports = {

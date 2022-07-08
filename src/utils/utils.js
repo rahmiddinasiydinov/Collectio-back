@@ -9,9 +9,15 @@ cloudinary.config({
 const uploader = (path) => {
   return cloudinary.uploader.upload(path);
 };
-
+const destroyer = (path) => {
+  return cloudinary.uploader.destroy(path?.split('/').pop().split('.')[0], {
+    invalidate: true,
+    resource_type: "image",
+  });
+}
 module.exports = {
   uploader,
+  destroyer
 };
 
 

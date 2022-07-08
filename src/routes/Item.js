@@ -1,6 +1,6 @@
 const { collectionModel } = require("../model/collection");
 const { itemModel } = require("../model/item");
-const { uploader } = require("../utils/utils");
+const { uploader, destroyer } = require("../utils/utils");
 const { userModel } = require("../model/user");
 
 const Item = {
@@ -116,8 +116,6 @@ const Item = {
       const upDated = await userModel
         .findOne({ _id: userId })
         .populate("items");
-
-      console.log(upDated);
       res.send({
         status: 200,
         message: "Successfully created!",
@@ -130,6 +128,34 @@ const Item = {
       });
     }
   },
+  DELETE: async (req, res) => {
+   try {
+     const { id } = req.query;
+     const deleted = await itemModel.findByIdAndDelete(id);
+     await destroyer(deleted?.img);
+     const user = await userModel
+       .findOne({ username: req?.user?.username });
+     const leftItems = user.items?.filter(e=>e.toString() != id)
+     user.items = leftItems;
+     console.log(leftItems, "qator");
+     await user.save();
+     const collection = await collectionModel.findOne({ _id: deleted?.collectionName });
+     const leftItemsOnCollection = collection?.items?.filter(e => e.toString() != id);
+     collection.items = leftItemsOnCollection;
+     await collection.save();
+     const updatedUser =await  userModel
+       .findOne({ username: req?.user?.username })
+       .populate('items');
+     res.send({
+       status: 200,
+       data: updatedUser?.items,
+     });
+   } catch (error) {
+     console.log(error);
+     res.status(500).send("Internal server error");
+    
+   }
+  }
 };
 module.exports = {
   Item,

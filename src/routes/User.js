@@ -1,7 +1,7 @@
 const { signUser } = require("../lib/jwt");
 const { userModel } = require("../model/user");
 const bycript = require("bcrypt");
-const { uploader } = require("../utils/utils");
+const { uploader, destroyer } = require("../utils/utils");
 const User = {
   GET: async (req, res) => {
     try {
@@ -166,9 +166,10 @@ const User = {
   },
   UPLOAD_IMAGE: async (req, res) => {
     try {
-    console.log(req?.file);
+      console.log(req?.file);
       const response = await uploader(req.file.path);
       const user = await userModel.findOne({ username: req?.user?.username });
+      await destroyer(user?.img);
       console.log(user);
     user.img = response.url;
     const updatedUser = await user.save();
